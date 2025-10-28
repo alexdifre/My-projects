@@ -1,0 +1,17 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+The experiments were conducted on a Asus Vivobook X515 with the following hardware specifications:
+\begin{itemize}
+    \item \textbf{CPU:} AMD Ryzen 5500U, 6-core
+    \item \textbf{GPU:} Radeon Graphics
+    \item \textbf{RAM:} 12 GB LPDDR5, 3200 MHz
+\end{itemize}
+
+The datasets utilized in this study are those made available by the LongEval CLEF 2025 Lab, accessible at: \href{https://clef-longeval.github.io/data/}{https://clef-longeval.github.io/data/}
+
+The full implementation of the project is available at: \href{https://bitbucket.org/upd-dei-stud-prj/seupd2425-searchill/src/master/}{https://bitbucket.org/upd-dei-stud-prj/seupd2425-searchill/src/master/} --- Bitbucket 
+
+To use the query correction feature, you can either use the LanguageTool API available at \url{https://api.languagetoolplus.com/v2} or run a local instance available at \url{https://dev.languagetool.org/http-server}.
+
+The reranker is used either via a local Python HTTP server or through the Cohere web service (\url{https://cohere.com/}), which was employed for comparison purposes but is limited in the number of requests.

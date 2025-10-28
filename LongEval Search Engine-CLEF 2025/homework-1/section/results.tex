@@ -1,0 +1,106 @@
+\section{Results and Discussion}
+\label{sec:results}
+
+In this section we present the results obtained by our systems. In particular, Section~\ref{subsec:Results on Training Data} summarizes the system's performance with different configurations on the training dataset. Section~\ref{subsec:Test Results} provides a statistical analysis of the runs submitted to CLEF.
+
+\subsection{Results on Training Data}
+\label{subsec:Results on Training Data}
+We combined the various components outlined in Section~\ref{sec:methodology} and carried out a series of experiments to determine the most effective configuration for our search engine. By systematically tuning and optimizing the parameters of each component, we aimed to achieve the optimal performance. Table~\ref{tab:evaluation_results} presents the Mean Average Precision (MAP) and normalized Discounted Cumulative Gain (nDCG) scores achieved by the different methods, benchmarking their performance on the test documents, queries, and relevance judgments from the TU Wien Research Data Repository\cite{longeval2025}.
+
+\begin{table}[htbp]
+\centering
+\caption{Evaluation Results for Different Methods (2022 and 2023). Bolded numbers indicate the best stemmer and tokenizer. All "Other Methods" were tested with the baseline of "Snow + Letter + Stoplist (40FR+10EN) + Expansion".}
+\label{tab:evaluation_results}
+\small
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\rowcolor{gray!20}
+\textbf{Method} & \textbf{MAP 2022} & \textbf{NDCG 2022} & \textbf{MAP 2023} & \textbf{NDCG 2023} \\
+\hline
+\multicolumn{5}{|l|}{\footnotesize\textit{Stemmers}} \\
+FrenchLight                    & 0.0703 & 0.1398 & 0.1345 & 0.2207 \\
+FrenchMinimal                  & 0.0722 & 0.1426 & 0.1370 & 0.2250 \\
+Snowball                       & \textbf{0.0767} & \textbf{0.1499} & \textbf{0.1422} & \textbf{0.2315} \\
+\hline
+\multicolumn{5}{|l|}{\footnotesize\textit{Tokenizers}} \\
+Letter                         & \textbf{0.0923} & \textbf{0.1723} & \textbf{0.1710} & \textbf{0.2675} \\
+Standard                       & 0.0919 & 0.1710 & 0.1695 & 0.2656 \\
+Whitespace                     & 0.0796 & 0.1541 & 0.1512 & 0.2420 \\
+\hline
+\multicolumn{5}{|l|}{\footnotesize\textit{Analyzer methods}} \\
+Snow + Letter                           & 0.0891 & 0.1678 & 0.1620 & 0.2574 \\
+Snow + Standard                         & 0.0882 & 0.1661 & 0.1616 & 0.2564 \\
+Snow + Letter + Expansion               & 0.0890 & 0.1677 & 0.1623 & 0.2580 \\
+Snow + Letter + Stoplist (40FR+10EN) + Expansion & \textbf{0.0902} & \textbf{0.1694} & \textbf{0.1631} & \textbf{0.2587} \\
+Snow + Letter + Stoplist (40FR+10EN) + Expansion &  &  & \textbf{0.2208*} & \textbf{0.3285*} \\
+\hline
+\multicolumn{5}{|l|}{\footnotesize\textit{Other Methods}} \\
+Synonyms                                            & 0.0880 & 0.1669 & 0.2169*& 0.3247*\\
+Fuzzy                                               & 0.0931 & 0.1740 & 0.2251*& 0.3377*\\
+Phrase                                              & 0.0966 & 0.1764 & 0.2509*& 0.3571*\\
+PRF                                                 & 0.0792 & 0.1581 & 0.1768*& 0.2905*\\
+Word2vec                                            &        &        & 0.2138*& 0.3218*\\
+N-grams                                             & 0.0901 & 0.1693 & 0.2209*& 0.3285*\\
+Start                                               & 0.0902 & 0.1695 & 0.2210*& 0.3288*\\
+Dictionary                                          & 0.0890 & 0.1678 & 0.2190*& 0.3265*\\
+Highlights                                          & 0.0901 & 0.1693 & 0.2208*& 0.3285*\\
+LLM                                                 & 0.0871 & 0.1681 & 0.2100*& 0.3210*\\
+Phrase + Fuzzy + Start                              & 0.0979 & 0.1794 & 0.2571*& 0.3657*\\
+Phrase + Fuzzy + Start + Highlights                 &        &        & 0.2571*& 0.3657*\\
+Phrase + Fuzzy + Start + N-grams       &        &        & 0.2571*& 0.3657*\\
+Phrase + Fuzzy + Start + PRF &        &        & 0.2382*& 0.3502*\\
+Phrase + Fuzzy + Start + synonyms &        &        & 0.2378*& 0.3499*\\
+Phrase + Fuzzy + Start + dictionary       &        &        & 0.2569*& 0.3651*\\
+Phrase + Fuzzy + Start + N-grams + synonyms  + dictionary &        &        & 0.2383*& 0.3500*\\
+Phrase + Fuzzy + Start + Highlights + N-grams       &        &        & 0.2571*& 0.3657*\\
+
+\hline
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item Bolded numbers indicate the best stemmer and tokenizer. All "other methods" were tested with the baseline of \emph{Snow + Letter + Stoplist (40 FR + 10 EN) + Expansion}.
+\item * Values obtained using: qrels version dated 05/05/2025 and queries version dated 23/04/2025. Other values were obtained using: qrels and queries version dated 23/04/2024.
+\end{tablenotes}
+\end{table}
+
+\pagebreak
+
+\textbf{Stemmers}:
+
+Comparing the three stemming algorithms, Snowball consistently outperformed FrenchLight and FrenchMinimal, achieving the highest MAP and nDCG scores across both datasets.
+\vspace{1\baselineskip}
+
+\textbf{Tokenizers}:
+
+Among the tokenizers, the Letter Tokenizer produced the best results, marginally outperforming Standard Tokenizer. Whitespace tokenizer, on the other hand, led to worse retrieval, likely due to its inability to handle punctuation and contractions present in the dataset.
+\vspace{1\baselineskip}
+
+\textbf{Analyzer Methods}:
+
+We expanded our analysis by combining the best-performing Snowball stemmer with Letter and Standard Tokenizers and applying both stoplist filtering and query expansion strategies. The best performance resulted from employing the Letter tokenizer, tuned stoplist with 40 French + 10 English terms and abbreviation expansion. This indicates that stopword removal, combined with robust normalization and expansion, enhances precision and ranking quality.
+\vspace{1\baselineskip}
+
+\textbf{Other Methods}:
+
+To enable a systematic and manageable evaluation, each method was tested independently under the simplifying assumption that they do not interact with each other. This approach allowed us to isolate and measure the individual contribution of each component:
+\begin{itemize}
+\item\textbf{Phrase} showed the best performance for 2022 data compared to other individual methods, achieving among the highest MAP and nDCG values in the category. This suggests that methods accommodating natural variations in language (and word order) is particularly effective in our setting.
+
+\textbf{Start}, on the other hand, yielded significant improvements over the baseline in 2023, but little to no gain on the 2022 data. The gains observed in 2023 suggest that this method became more effective with the newer dataset, contributing positively to retrieval quality.
+
+\item\textbf{Fuzzy} decidedly improved upon the baseline for both 2022 and 2023 datasets, suggesting that tolerance for minor typographical errors and spelling variations is highly valuable in this dataset. The increase in both evaluation metrics points to the method's ability to recover relevant documents that would otherwise be missed due to small discrepancies between query terms and document text.
+
+\item\textbf{Phrase + Fuzzy + Start}, the combination of these complementary strategies yielded the highest MAP and nDCG values for 2022 data. This result indicates that integrating contextual, positional, and fuzzy matching potentially creates a synergistic effect, enhancing overall system performance.
+
+\item\textbf{Highlights}, \textbf{N-grams} and \textbf{Start} showed inconsistent results, yielding marginally lower results than the baseline for 2022, but demonstrating a notable improvement on the 2023 data.
+
+\item\textbf{Dictionary}, \textbf{Synonyms}, \textbf{PRF}, \textbf{Word2vec}, and \textbf{LLM} only decreased the system performance compared to the baseline of \textit{Snow + Letter + Stoplist (40FR+10EN) + Expansion}. This may be due to the addition of irrelevant or weakly related terms, which increased ambiguity or caused topic drift, ultimately reducing the system's precision.
+
+\end{itemize}
+
+As of May 5th, due to the API rate limit of 10 requests per minute, it was not feasible to evaluate the reranker within a reasonable timeframe. Processing approximately 7,000 queries would require over 15 hours, significantly hindering the ability to conduct timely and iterative experiments.
+
+\subsection{Test Results}
+\label{subsec:Test Results}
+The best-performing feature combination consists of using SnowballFilter as the stemmer, LetterTokenizer as the tokenizer, a stoplist comprising 40 French words and 10 English words, and abbreviation expansion.
+The core search strategy is based on the Phrase, Fuzzy, and Start features, which-when combined with Highlights and N-grams do not improve the score further. All other features were found to degrade performance.

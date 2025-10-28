@@ -1,0 +1,483 @@
+\section{Methodology}
+\label{sec:methodology}
+
+In this section, we describe the methodology adopted to develop our IR system for the task.
+
+
+\subsection{Parser}
+The parser is responsible for reading and extracting structured data from complex document formats, enabling effective indexing and retrieval. Our document parsing framework consists of several components designed to handle different document structures efficiently:
+
+\begin{itemize}
+
+\item \textbf{DocumentParser:} This abstract class serves as the core of our parsing framework. It provides a template for iterating over documents. The class ensures that documents are read correctly.
+
+\item \textbf{ParsedDocument:} This class encapsulates the structure of a parsed document. It defines essential fields such as:
+  \begin{itemize}
+    \item \texttt{ID} - A unique identifier for each document.
+    \item \texttt{Body} - The main content of the document.
+    \item \texttt{Start} - Initial lines of the document, often used for quick reference.
+    \item \texttt{Highlights} - Notable words or phrases extracted from tags or special formatting, enhancing keyword extraction.
+  \end{itemize}
+
+\item \textbf{TrecParser:} This specialized class extends \texttt{DocumentParser} to handle TREC-formatted documents. Key functions include:
+  \begin{itemize}
+    \item Regex-based extraction of document fields such as \texttt{<DOCNO>} and \texttt{<DOCID>}.
+    \item Management of document content using a multistage buffering approach to efficiently handle large text bodies.
+    \item Extraction of emphasized content through patterns such as \texttt{hashtags} and \texttt{strong} tags, improving the semantic richness of stored highlights.
+    \item Support for emoji and URL filtering, ensuring text data is clean and normalized before analysis.
+  \end{itemize}
+
+\item \textbf{Error Handling:} Robust error management is implemented to gracefully handle missing or malformed data, maintaining the stability and reliability of the parser.
+
+\end{itemize}
+
+This structured parsing methodology allows for the seamless transformation of raw text into well-defined data objects, paving the way for accurate indexing and retrieval operations.
+
+
+
+\subsection{Analyzer}
+The \texttt{FrenchAnalyzer} is designed to process French texts, integrating multiple components to ensure accurate analysis:
+
+\begin{itemize}
+    \item \textbf{Tokenization:} We provide multiple tokenizer options to cater to different text handling needs:
+    \begin{itemize}
+        \item \texttt{WhitespaceTokenizer} - Splits texts at whitespace, ideal for structured input.
+        \item \texttt{LetterTokenizer} - Separates tokens at non-letter characters, useful for handling alphabetic text.
+        \item \texttt{StandardTokenizer} - Uses advanced parsing rules for handling more complex textual structures, such as handling punctuation and special characters. Includes Named Entity Recognition (NER) for recognising email addresses, URLs, and numeric sequences as single tokens. 
+        \item \texttt{OpenNLPTokenizer} - Uses OpenNLP statistical models for tokenization, which is beneficial for handling complex language.
+    \end{itemize}
+
+    \item \textbf{Character Folding:} Using \texttt{ICUFoldingFilter}, characters are normalized to their basic forms, standardizing variations such as accented characters to their base, which improves the uniformity of the processing.
+
+    \item \textbf{Elision Removal:} The \texttt{ElisionFilter} targets contracted French words, removing apostrophes and similar contractions, treating contractions like "l'histoire" simply as "histoire".
+
+    \item \textbf{Abbreviation Expansion:} The \texttt{AbbreviationExpansionFilter} employs a predefined map to expand abbreviations, ensuring that terms such as "Dr." are expanded to "Doctor", further improving processing uniformity.
+
+    \item \textbf{POS Tagging and Compound Formation:} Through \texttt{CompoundPOSTokenFilter}, part-of-speech tags are assigned using the OpenNLP POS model. This allows for recognising compound words as such and treating them as single tokens.
+
+    \item \textbf{N-grams Generation:} \texttt{ShingleFilter} is optionally applied to produce n-grams that capture context within a specified window size. 
+
+    \item \textbf{Stopword Removal:} The \texttt{StopFilter}, loaded with a list of irrelevant tokens, removes common stopwords that do not contribute to the semantic meaning of texts and queries.
+
+    \item \textbf{Length Filtering:} The \texttt{LengthFilter} ensures that only tokens within a specified character range are retained, filtering out noise and exceedingly frequent short tokens.
+
+    \item \textbf{Position Increment Adjustment:} Implemented via \texttt{PositionFilter}, this adjusts the \texttt{positionIncrement} attribute of tokens, maintaining consistent positional data for proximity-based queries.
+
+    \item \textbf{Stemming and Lemmatization:} customised to handle French morphology:
+    \begin{itemize}
+        \item \texttt{FrenchLightStemFilter} - Applies a light stem, suitable for texts requiring minimal conversion.
+        \item \texttt{FrenchMinimalStemFilter} - Executes minimal stemming, avoiding over-reduction.
+        \item \texttt{SnowballFilter}(snow) - Employs the Snowball stemming algorithm, recognized for its effectiveness across languages.
+        \item \texttt{OpenNLPLemmatizerFilter} - A lemmatization approach that uses OpenNLP to convert words to their base forms, capturing the underlying semantics.
+    \end{itemize}
+\end{itemize}
+
+\begin{center}
+    \begin{figure}[h]
+        \centering
+        \begin{tikzpicture}[node distance=0.5cm and 0.5cm, auto]
+            % Nodes
+            \node[rectangle, draw, thick, align=center, fill=blue!20, minimum width=3cm, minimum height=1cm] (stage1) {Input:
+            \\ Il est essentiel que l'analyse du texte soit méticuleuse pour la recherche des données.};
+
+            \node[rectangle, draw, thick, align=center, fill=blue!20, minimum width=3cm, minimum height=1cm, below=of stage1] (stage2) {Tokenizer \texttt{[}Letter\texttt{]}:
+            \\
+            \texttt{[}Il, est, essentiel, que, l'analyse, du, texte, soit, méticuleuse, pour, la, recherche, des, données\texttt{]}};
+
+            \node[rectangle, draw, thick, align=center, fill=blue!20, minimum width=3cm, minimum height=1cm, below=of stage2] (stage3) {Character folding:
+            \\
+            \texttt{[}Il, est, essentiel, que, l'analyse, du, texte, soit, méticuleuse, pour, la, recherche, des, données\texttt{]}};
+
+            \node[rectangle, draw, thick, align=center, fill=blue!20, minimum width=3cm, minimum height=1cm, below=of stage3] (stage4) {Elision:
+            \\
+            \texttt{[}Il, est, essentiel, que, analyse, du, texte, soit, méticuleuse, pour, la, recherche, des, données\texttt{]}};
+
+            \node[rectangle, draw, thick, align=center, align=center, fill=blue!20, minimum width=3cm, minimum height=1cm, below=of stage4] (stage5) {Stopword removal \texttt{[}First 50 FR terms\texttt{]}:
+            \\
+            \texttt{[}essentiel, analyse, texte, soit, méticuleuse, recherche, données \texttt{]}
+            };
+
+            \node[rectangle, draw, thick, align=center, align=center,fill=blue!20, minimum width=3cm, minimum height=1cm, below=of stage5] (stage6) {Stemming \texttt{[}Snowball\texttt{]}:
+            \\
+            \texttt{[}essentiel, analys, text, soit, méticuleus, recherch, don \texttt{]}
+            };
+
+            \draw[->, thick] (stage1) -- (stage2);
+            \draw[->, thick] (stage2) -- (stage3);
+            \draw[->, thick] (stage3) -- (stage4);
+            \draw[->, thick] (stage4) -- (stage5);
+            \draw[->, thick] (stage5) -- (stage6);
+        \end{tikzpicture}
+        \caption{Example of the analyzer process.}
+        \label{fig:fr_analyzer_process}
+    \end{figure}
+\end{center}
+
+\newpage
+\subsection{Indexer}
+
+\begin{itemize}
+    \item \textbf{BodyField}: \begin{itemize}
+                                  \item \textbf{BodyField}: represents the body field of a document: \begin{itemize}
+                                                                                                         \item \textbf{token}: the body is broken into tokens.
+                                                                                                         \item \textbf{frequency}: we save the frequency of the tokens.
+                                                                                                         \item \textbf{position}:  we save the position of the tokens, this allows us to use phrase queries.
+                                                                                                         \item \textbf{body store}: we save the body of the documents, this allows us to pass the document's bodies to a re-ranker.
+
+                                  \end{itemize}
+                                  \item \textbf{StartField}: \begin{itemize}
+                                                                 \item \textbf{token}: the start is broken into tokens.
+                                                                 \item \textbf{frequency}: we save the frequency of the tokens.
+                                                                 \item \textbf{body store}: we save the start of the documents.
+                                  \end{itemize}
+                                  \item \textbf{HighlightedField}: \begin{itemize}
+                                                                 \item \textbf{token}: the hightlighted is broken into tokens.
+                                                                 \item \textbf{frequency}: we save the frequency of the tokens.
+                                                                 \item \textbf{body store}: we save the highlights of the documents.
+                                  \end{itemize}
+    \end{itemize}
+    \item \textbf{DirectoryIndexer}: \newline
+    \setlength\parindent{24pt} This class indexes documents found within a designated directory. It allows for several parameters, such as the directory where the documents are stored, the type of parser used to parse the documents, the analyzer used to process the text, the similarity metric employed for indexing, the anticipated number of documents, and the location where the resulting index will be saved.
+
+        \begin{center}
+        \begin{table}[h]
+            \centering
+            \begin{tabular}{|c|c|c|c|c|}
+                \hline
+                Collection & Docs Size (GB) & Body Terms & Number of Documents & Index Size (GB) \\
+                \hline
+                French 2022-06 & 9,3 & 3,423,470 & 1,590,024 & 7.5 \\
+                \hline
+                French 2023-01 & 12.8 & 38,313,777 & 2,537,554 & 12.4 \\
+                \hline
+            \end{tabular}
+            \caption{Indexing output details.}
+            \label{tab:Indexing_details}
+        \end{table}
+    \end{center}
+
+\end{itemize}
+
+\subsubsection{StopList Choice}
+After we have indexed all the documents part of the training set, we used LUKE, a tool provided by Lucene that allowed us to inspect our indexed documents and see how the documents were indexed and identify the most frequent tokens in our collection.
+\\ \\
+After indexing all the French documents without using stop lists or Stemmers, we observed the first lines of results.
+
+\begin{flushleft}
+    We noticed there are English terms and numbers with significant frequency values alongside French terms. Based on this observation, we decided to create various stop lists incorporating different combinations of numbers, English terms, or both. We then examined the computational results of these configurations. All this was done to verify the importance that these elements have in the context of the documents analyzed.
+\newline
+    The created stop lists are:
+    \begin{itemize}
+        
+        \item \textbf{stopList40FR-10EN :} It contains the first 40 French terms and 10 English terms.
+
+        \item \textbf{stopList40FR-10NUM :} It contains the first 40 French terms and 10 numbers.
+
+        \item \textbf{stopList35FR-10EN-5NUM :} It contains the first 35 French terms, 10 english words and 5 numbers.
+
+        \item \textbf{stopList50FR-2022-06 :} It contains the first 50 French terms from the French collection 2022-06.
+        
+        \item \textbf{stopList50FR-2023-01 :} It contains the first 50 French terms from the French collection 2023-01.
+    \end{itemize}
+\end{flushleft}
+
+We chose the best one, and decided to use it for all the runs.
+\begin{itemize}
+    \item  \textbf{Stoplists tuning:}
+\end{itemize}
+
+\begin{table}[ht]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \begin{tabular}{ |l|c|c| }
+            \hline
+            Run name 2022-06 & nDCG & MAP \\
+            \hline\hline
+            stoplist-BstoplistFR & 0,1682 & 0.0896 \\
+            stoplist-50FR & 0,1681 & 0.0897 \\
+            stoplist-40FR-10N & 0,1673 & 0.0890 \\
+            \rowcolor{LightYellow}
+            stoplist-40FR-10EN & 0,1694 & 0.0902 \\
+            stoplist-35FR-10EN-5N & 0,1679 & 0.0894 \\
+            \hline
+        \end{tabular}
+        \caption{Stoplist tuning table 2022-06.}
+        \label{tab:stoplist-2022}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \begin{tabular}{ |l|c|c| }
+            \hline
+            Run name 2023-01 & nDCG & MAP \\
+            \hline\hline
+            stoplist-BstoplistFR & 0,2540 & 0.1620 \\
+            stoplist-50FR & 0,2545 & 0.1624 \\
+            stoplist-40FR-10N & 0,2530 & 0.1619 \\
+            \rowcolor{LightYellow}
+            stoplist-40FR-10EN & 0,2587 & 0.1631 \\
+            stoplist-35FR-10EN-5N & 0,2531 & 0.1622 \\
+            \hline
+        \end{tabular}
+        \caption{Stoplist tuning table 2023-01.}
+        \label{tab:stoplist-2023}
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item  \textbf{Stemmer tuning:}
+\end{itemize}
+
+\begin{table}[ht]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \begin{tabular}{ |l|c|c| }
+            \hline
+            Run name 2022-06 & nDCG & MAP \\ [0.5ex]
+            \hline\hline
+            stem-FrenchLight & 0.1398 & 0.0703 \\
+            \rowcolor{LightYellow}
+            stem-SnowBall & 0.1499 & 0.0767 \\
+            stem-FrenchMinimal & 0.1426 & 0.0722 \\
+            \hline
+        \end{tabular}
+        \caption{Stemmer tuning 2022-06}
+        \label{tab:stemmer-a}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \begin{tabular}{ |l|c|c| }
+            \hline
+            Run name 2023-01 & nDCG & MAP \\ [0.5ex]
+            \hline\hline
+            stem-FrenchLight & 0.2207 & 0.1345 \\
+            \rowcolor{LightYellow}
+            stem-SnowBall & 0.2315 & 0.1422 \\
+            stem-FrenchMinimal & 0.2250 & 0.1370 \\
+            \hline
+        \end{tabular}
+        \caption{Stemmer tuning 2023-01}
+        \label{tab:stemmer-b}
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item  \textbf{Tokenizer tuning:}
+\end{itemize}
+
+\begin{table}[ht]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \begin{tabular}{ |l|c|c| }
+            \hline
+            Run name 2022-06 & nDCG & MAP \\ [0.5ex]
+            \hline\hline
+            tokenizer-WhiteSpace & 0.1541 & 0.0796 \\
+            \rowcolor{LightYellow}
+            tokenizer-Letter & 0.1723 & 0.0923 \\
+            tokenizer-Standard & 0.1710 & 0.0919 \\
+            \hline
+        \end{tabular}
+        \caption{Stemmer tuning 2022-06}
+        \label{tab:stemmer-a}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \begin{tabular}{ |l|c|c| }
+            \hline
+            Run name 2023-01 & nDCG & MAP \\ [0.5ex]
+            \hline\hline
+            tokenizer-WhiteSpace & 0.2420 & 0.1512 \\
+            \rowcolor{LightYellow}
+            tokenizer-Letter & 0.2675 & 0.1710 \\
+            tokenizer-Standard & 0.2656 & 0.1695 \\
+            \hline
+        \end{tabular}
+        \caption{Stemmer tuning 2023-01}
+        \label{tab:stemmer-b}
+    \end{minipage}
+\end{table}
+
+
+\subsection{Searcher}
+\label{subsec:searcher}
+Within the searcher component, a Boolean query strategy was employed to facilitate query expansion and enhance the overall effectiveness of the information retrieval system. The initial query terms were designated as mandatory for document retrieval, while the expanded terms were incorporated as optional elements, thereby allowing for greater flexibility in matching relevant documents. Furthermore, a boosting mechanism was applied to assign increased weight to the original query, reinforcing its central role in the retrieval process. The subsequent section provides a detailed account of the query expansion methodology implemented.
+
+\subsubsection{Start}
+\label{subsubsec:Start}
+It is commonly observed that the core subject matter of a document is often introduced at the beginning of the text. Building upon this assumption, we implemented a strategy within the indexer to store the first five lines of each document, leveraging the structural layout provided by the LongEval dataset in TREC format. This design choice allowed the search engine to perform query operations specifically within this initial segment — termed the \texttt{start} — rather than scanning the entire document body.
+
+To further enhance retrieval precision, we assigned greater weight to query matches occurring within the \texttt{start} section compared to those found elsewhere in the document. The underlying rationale was that documents introducing the query terms early on are more likely to align with the user's search intent. This emphasis on the initial portion was intended to improve both the relevance and the overall quality of the retrieved results.
+
+\subsubsection{N-grams}
+\label{subsubsec:Start}
+As an initial step in our query expansion strategy, we employed word N-grams—sequences of adjacent terms extracted from the original query—to enrich the query representation. This process involves tokenizing the original query into individual words and subsequently recombining them into contiguous word pairs. For example, the query "\texttt{running shoes women}" is tokenized into "\texttt{running}", "\texttt{shoes}", and "\texttt{women}", from which we generate the bi-grams "\texttt{running shoes}" and "\texttt{shoes women}".
+
+While this technique has the potential to enhance retrieval accuracy by capturing meaningful term associations, we deliberately assigned a lower weight to these expanded terms within the Boolean query formulation. This decision was made to prioritize documents that more closely align with the original query, thus preserving its semantic integrity.
+
+Moreover, we restricted the generation of N-grams to a maximum of two words. In our view, extending the N-gram length beyond this threshold would introduce an excessive number of query variants, potentially diluting the relevance of the results and increasing computational overhead.
+
+
+\subsubsection{Fuzzy Search}
+\label{subsubsec:fuzzy}
+To further improve the robustness of our search system, we integrated a fuzzy search mechanism capable of handling approximate matches between query terms and document content. This technique is particularly effective in addressing minor input errors such as typographical mistakes, letter transpositions, or common abbreviations. By setting a similarity threshold, the system ensures that only plausible variations of the query terms are considered, thereby maintaining an acceptable level of accuracy. For example, a query such as "\texttt{Adibas chaussures}" may successfully retrieve documents containing the correctly spelled brand name "\texttt{Adidas}".
+
+The fuzzy searcher leverages the Damerau–Levenshtein distance as its core similarity metric. This algorithm—also referred to as the optimal string alignment distance—quantifies the dissimilarity between two strings based on the minimum number of edit operations (insertions, deletions, substitutions, or adjacent transpositions) required to transform one string into the other.
+
+In our implementation of fuzzy search \cite{luceneFuzzyQuery2024}, candidate terms are collected and scored according to their respective edit distances, with only the highest-ranking terms incorporated into the expanded query. Importantly, we deliberately avoided using high distance thresholds, as such configurations tend to generate overly broad matches, ultimately reducing retrieval precision and degrading overall system performance.
+\vspace{\baselineskip}
+
+\textbf{Fuzzy Tuning}
+
+To assess the effectiveness of incorporating fuzzy queries within our Boolean query framework, we employed an empirical evaluation strategy. Specifically, we compared the performance of a baseline configuration — where no query expansion techniques were applied and only the original query was used — against a series of runs integrating fuzzy queries with varying weight parameters. This process, which we refer to as \texttt{Fuzzy Tuning}, aimed to isolate and measure the contribution of fuzzy matching to retrieval performance. Notably, all experiments were conducted without the use of the re-ranking component.
+
+\vspace{\baselineskip}
+
+We determined that a weight increment of 0.1 constituted a suitable compromise between granularity and experimental feasibility, as finer increments (e.g., 0.05) would have necessitated a disproportionately high number of runs without a commensurate gain in insight.
+
+\vspace{\baselineskip}
+
+As illustrated in Table 5, the optimal performance was observed when the fuzzy component was assigned a weight of 0.1. This result is consistent with the intended role of fuzzy filtering: while it is effective at capturing minor orthographic variations (e.g., typographical errors or alternate spellings), overemphasizing its contribution may inadvertently amplify terms that are lexically similar yet semantically unrelated. Consequently, excessive weighting can degrade the quality of the retrieved documents by introducing noise into the results.
+
+\subsubsection{Dictionary}
+\label{subsubsec:Dictionary}
+During the analysis of user input, we observed that certain queries appeared in unconventional formats, such as URLs, dot-separated terms (e.g., \texttt{term1.term2.term3}), or concatenated words without spacing (e.g., \texttt{term1term2term3}), which posed challenges for effective processing by the search engine. To mitigate issues caused by punctuation, we implemented a function based on regular expressions to systematically remove such characters from the input.
+
+In addressing the problem of concatenated terms, we employed a dictionary derived from the provided synonyms file. This dictionary enables the system to identify and extract meaningful sub-terms embedded within single-word queries. Notably, this approach was applied exclusively to queries composed of a single token, as extending it to multi-word queries introduced considerable computational overhead and negatively impacted system performance.
+
+The motivation for focusing on single-word queries lies in the higher likelihood of such inputs being affected by typographical errors. In these cases, suggesting alternative or similar terms can significantly enhance retrieval quality. Conversely, in multi-word queries, the probability of all constituent terms being misspelled is low; thus, attempting to alter each term could reduce both precision and overall system effectiveness.
+
+\subsubsection{Synonyms}
+\label{subsubsec:synonyms}
+Implementing synonyms in retrieval poses challenges, including semantic ambiguity and noise due to polysemy and irrelevant matches. While synonyms theoretically broaden search scope, actual gains depend on context-specific relevance. To mitigate computational overhead, synonyms were managed at query time using a query expansion model. This approach aims to enhance retrieval accuracy while maintaining system efficiency.
+
+Consider the example query "\texttt{Chat orange}", normally, the information retrieval (IR) system first parses and analyzes the query and searches for "\texttt{orange}" and "\texttt{chat}". However, if a relevant document contains "\texttt{gingembre}" instead of "\texttt{orange}" and "\texttt{félin}" instead of "\texttt{chat}", the document will not be considered relevant. The searcher takes the original query, searches a synonym collection for synonyms of those words, and retrieves three synonyms. If there are more than three available in the collection, three synonyms are chosen randomly, and these are then added to the Boolean query. We chose to use a synonym collection sourced from GitHub \cite{lorenzon2016vim}. 
+
+\textbf{Synonyms Tuning}: Since the synonyms approach involves selecting three random synonyms from the collection, we chose not to adopt an experimental approach as we did with the Fuzzy and Phrase tools, due to a lack of repeatability stemming from the aforementioned randomness. We assigned a weight of 0.1 to each synonym to maintain the choices made for the Phrase and Fuzzy Query tools.
+
+\subsubsection{Phrase Query}
+\label{subsubsec: Phrase Query }
+
+To further enhance the precision of our retrieval system, we implemented a \textbf{Phrase Query Searcher} designed to identify documents containing a specific sequence of terms in the exact or near-exact order in which they appear in the query. Phrase queries require that the specified terms occur in contiguous positions within the document. However, to allow for a degree of flexibility in term positioning, we employed the \textit{slop} parameter, which defines the maximum number of positional shifts permitted between the terms.
+
+This mechanism is particularly beneficial in accommodating natural variations in language, such as minor rearrangements or the insertion of additional words. For example, a query for the phrase ``quick brown fox'' with a slop value of $1$ would also match documents containing ``quick fox brown,'' thereby increasing recall without significantly deviating from the original query intent.
+
+The incorporation of phrase queries thus improves the search engine’s ability to retrieve documents that closely align with the semantic structure of the user input, even when exact word order is not preserved.
+
+In the context of LongEval 2025 \cite{longeval2025} the official queries are provided in two formats. The first follows the TREC format, structured as:
+
+\begin{verbatim}
+<top>
+<num>q062228</num>
+<title>aeroport bordeaux</title>
+</top>
+\end{verbatim}
+
+Here, the \texttt{<num>} tag denotes the query identifier, while the \texttt{<title>} tag contains the textual content of the query~\cite{reference5}. The alternative format, a TSV (tab-separated values) representation, is structured as:
+
+\begin{verbatim}
+62228 aeroport Bordeaux
+\end{verbatim}
+
+In this case, the query identifier and the query text are separated by whitespace \cite{longeval2025readme}.
+
+\subsubsection{Word2Vec}
+\label{subsubsec: Word2Vec}
+To provide word similarity functionality through a web-accessible interface, we developed a lightweight HTTP server using the Flask framework, chosen for its simplicity and ease of deployment in small-scale applications. At the core of the system lies the \texttt{KeyedVectors} interface from the Gensim library, which allows efficient loading and querying of pre-trained word embedding models.
+
+For our implementation, we employed the 300-dimensional French fastText word vectors (cc.fr.300.vec), which were trained on a large-scale Common Crawl corpus. These vectors are particularly suitable for capturing semantic relationships between words in French, thanks to their subword-based architecture that improves coverage and performance on rare or morphologically rich terms.
+
+The application exposes a single RESTful endpoint, \texttt{/similar}, designed to handle HTTP GET requests. Clients can query this endpoint by passing a word as a query parameter. To ensure consistent and reliable behavior, especially in the face of spelling variants and orthographic inconsistencies, the input word is first normalized: it is converted to lowercase and stripped of any diacritics using the unidecode library. This preprocessing step helps enhance the robustness of the similarity computation, enabling more tolerant matching and improved usability in real-world scenarios.
+
+The main purpose of this service is to support query expansion within our information retrieval pipeline. When a user submits a search query, the system sends the main term to the \texttt{/similar} endpoint. The endpoint responds with a list of semantically related words retrieved from the fastText embeddings. These similar terms are then automatically appended to the original query, effectively expanding it. This strategy enhances recall by allowing the retrieval system to consider contextually related terms, improving the chances of retrieving relevant documents even when exact matches are not present.
+
+
+\subsubsection{LLM}
+\label{subsubsec:LLM}
+LLM-based query expansion is a technique used to enhance the effectiveness of a search engine by automatically expanding the original query formulated by the user. This methodology is particularly useful in cases where the user input is too generic, vague, or ambiguous, and therefore insufficient to return truly relevant results.
+
+In our case, the query is sent to a Large Language Model (LLM), specifically \textit{ChatGPT-3.5-turbo}, which is responsible for interpreting the meaning of the sentence and generating three to four related terms.
+
+This number of terms was chosen strategically: an expansion that is too broad would introduce informational noise, potentially reducing the precision of the results, while an expansion that is too narrow would compromise the overall effectiveness of the technique.
+
+We therefore opted for a balanced solution, capable of enriching the query in a meaningful yet controlled way. These terms are not simple synonyms, but semantically related concepts that help enrich the context of the search. The goal is to provide the search engine with additional cues to identify relevant documents, even when they do not contain the exact terms used in the original query.
+
+The choice of using ChatGPT-3.5-turbo was driven by a trade-off between performance and cost: although less powerful and accurate than more advanced models such as GPT-4o or GPT-4.1, it proved to be sufficiently effective for our needs, at a significantly lower price compared to its counterpart.
+
+
+
+\subsubsection{Query Construction}
+\label{subsubsec:Query Construction}
+The core search process employs a dynamic Boolean query builder with weighted clauses:
+
+\begin{itemize}
+    \item \textbf{Base Query}: Mandatory clause parsed from the original query string
+    \item \textbf{Field Boosting}:
+    \begin{itemize}
+        \item Start field matches boosted by 1.5$\times$
+        \item Highlight field matches boosted by 1.2$\times$
+    \end{itemize}
+    \item \textbf{Query Expansion}: Optional features:
+    \begin{itemize}
+        \item Dictionary-based synonyms (0.1$\times$ weight)
+        \item Fuzzy search with edit distance=2 (0.2$\times$-0.8$\times$ weights), which allows for typos
+        \item Phrase queries with slop=5 window
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Query Expansion Techniques}
+\label{subsubsec:Query Expansion Techniques}
+We implemented six complementary expansion strategies:
+
+\paragraph{N-grams Generation}
+\begin{itemize}
+    \item Uses ShingleFilter with default 2-gram window
+    \item Applies 0.3$\times$ weight to generated bigrams
+    \item Filters single-word n-grams post-generation
+\end{itemize}
+
+\paragraph{Synonym Expansion}
+\begin{itemize}
+    \item Loads synonym mappings
+    \item Distributes weights equally among synonyms
+    \item Randomly selects 3 synonyms per term when multiple exist
+\end{itemize}
+
+\paragraph{Neural Expansion}
+\begin{itemize}
+    \item LLM-based term generation via GPT-3.5/DeepSeek APIs
+    \item Requests 5-10 related terms per query
+    \item Applies 0.4$\times$ weight to generated terms
+\end{itemize}
+
+\paragraph{Pseudo-Relevance Feedback (PRF)}
+\begin{itemize}
+    \item Extracts top 20 terms from initial results
+    \item Re-searches with expanded 0.5$\times$ weighted terms
+    \item Filters short tokens (<3 characters)
+\end{itemize}
+
+\subsubsection{Re-ranking Pipeline}
+\label{subsubsec:Re-ranking Pipeline}
+Final results undergo neural re-ranking:
+
+\begin{enumerate}
+    \item Normalize initial scores to [0,1] range
+    \item Retrieve top 100 document bodies
+    \item Invoke Cohere multilingual-v3 re-ranker
+    \item Combine scores using linear interpolation:
+    \[
+    \mathit{finalScore} = 0.4 \cdot \mathit{BM25} + 0.6 \cdot \mathit{CohereScore}
+    \]
+\end{enumerate}
+
+\subsubsection{BM25}
+\label{subsubsec:BM25}
+For document scoring, we adopted the \textbf{BM25} ranking algorithm \cite{robertson2009bm25}, a well-established probabilistic retrieval model known for its effectiveness in information retrieval tasks. BM25 evaluates the relevance of documents based on term frequency, inverse document frequency, and document length normalization.
+
+A notable limitation of BM25 lies in its sensitivity to parameter tuning, as identifying the optimal values for its parameters (typically $k_1$ and $b$) can be a non-trivial task. To address this, we opted to employ the default parameter settings provided by the Lucene library. This choice was guided by the consideration that manual parameter optimization might lead to overfitting on the development dataset, thereby impairing the model's generalization capability on previously unseen data.

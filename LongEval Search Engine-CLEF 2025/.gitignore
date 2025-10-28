@@ -1,0 +1,79 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+
+# LaTeX files
+*.aux
+*.log
+*.toc
+*.synctex.gz
+*.bbl
+*.blg
+
+# Matlab
+*.m~
+*.asv
+*.mex*
+
+# IntelliJ Idea
+*.iml
+.idea/
+
+# Java
+*.class
+target/
+log/
+
+# indexer
+code/experiment/
+
+# Tomcat Shell files
+tomcat-logs/
+
+# TIRA
+.tira
+
+# Package Files 
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# OSX
+.DS_Store
+
+#vs code
+.vscode
+
+config.properties

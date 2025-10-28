@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>it.unipd.dei.se.searchill</groupId>
+  <artifactId>SEARCHILL-longeval25</artifactId>
+
+  <version>1.0</version>
+  <name>SEARCHILL-longeval25</name>
+  <url>https://bitbucket.org/upd-dei-stud-prj/seupd2425-searchill/</url>
+  <description>
+    Code of group Searchill for the "Search Engines" course, A.Y. 2024/2025 for the Master Degree in Computer Engineering (University of Padua).
+    The group is participating in the LongEval Lab at CLEF 2025, Task 1 - LongEval-Retrieval.
+  </description>
+  <inceptionYear>2025</inceptionYear>
+
+  <developers>
+    <developer>
+      <id>adt</id>
+      <name>Andrea Di Tillo</name>
+      <email>andrea.ditillo@studenti.unipd.it</email>
+      <organization>University of Padua, Italy</organization>
+    </developer>
+    <developer>
+      <id>adf</id>
+      <name>Alessandro Di Frenna</name>
+      <email>alessandro.difrenna@studenti.unipd.it</email>
+      <organization>University of Padua, Italy</organization>
+    </developer>
+    <developer>
+      <id>av</id>
+      <name>Artur Voit-antal</name>
+      <email>artur.voitantal@studenti.unipd.it</email>
+      <organization>University of Padua, Italy</organization>
+    </developer>
+    <developer>
+      <id>lp</id>
+      <name>Luca Pellegrini</name>
+      <email>luca.pellegrini.5@studenti.unipd.it</email>
+      <organization>University of Padua, Italy</organization>
+    </developer>
+    <developer>
+      <id>mt</id>
+      <name>Marco Tomaiuoli</name>
+      <email>marco.tomaiuoli@studenti.unipd.it</email>
+      <organization>University of Padua, Italy</organization>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <organization>
+    <name>University of Padua, Italy</name>
+    <url>http://www.unipd.it/en/</url>
+  </organization>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <lucene.version>9.10.0</lucene.version>
+    <java.version>21</java.version>
+  </properties>
+
+  <build>
+    <defaultGoal>compile</defaultGoal>
+    <sourceDirectory>code/java/src/main/java</sourceDirectory>
+    <directory>code/java/target</directory>
+    <outputDirectory>code/java/target/classes</outputDirectory>
+    <finalName>${project.artifactId}-${project.version}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.12.1</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.6.3</version>
+        <configuration>
+          <reportOutputDirectory>${basedir}/javadoc</reportOutputDirectory>
+          <author>true</author>
+          <nosince>false</nosince>
+          <show>protected</show>
+          <source>${java.version}</source>
+          <doctitle>${project.name} ${project.version}</doctitle>
+          <windowtitle>${project.artifactId} ${project.version}</windowtitle>
+          <bottom>Copyright &#169; ${project.inceptionYear}&#x2013;{currentYear}
+            <![CDATA[<a href="https://www.unipd.it/en/" target="_blank">University of Padua</a>, Italy. All rights reserved.]]>
+            <![CDATA[<i>Search Engines</i> is a course of the <a href="https://degrees.dei.unipd.it/master-degrees/computer-engineering/" target="_blank">Master Degree in Computer Engineering</a> of the <a href="https://www.dei.unipd.it/en/" target="_blank">Department of Information Engineering</a> and the <a href="https://datascience.math.unipd.it/" target="_blank">Master Degree in Data Science</a> of the <a href="https://www.math.unipd.it/en/" target="_blank">Department of Mathematics &quot;Tullio Levi-Civita&quot;</a>.]]>
+            <![CDATA[<i>Search Engines</i> is part of the teaching activities of the <a href="http://iiia.dei.unipd.it/" target="_blank">Intelligent Interactive Information Access (IIIA) Hub</a>.]]>
+          </bottom>
+          <detectJavaApiLink>true</detectJavaApiLink>
+          <detectLinks>true</detectLinks>
+          <validateLinks>true</validateLinks>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analysis-common</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-queryparser</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-benchmark</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.14.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.argparse4j</groupId>
+      <artifactId>argparse4j</artifactId>
+      <version>0.9.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.15.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.15.1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vdurmont</groupId>
+      <artifactId>emoji-java</artifactId>
+      <version>5.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analyzers-icu</artifactId>
+      <version>8.11.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.cohere</groupId>
+      <artifactId>cohere-java</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-tools</artifactId>
+      <version>2.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analysis-opennlp</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>3.49.1.0</version>
+    </dependency>
+  </dependencies>
+</project>

@@ -1,0 +1,6 @@
+/main_functions/teacher_models/TeachResNet50_finetuned_best.pth  
+/main_functions/teacher_models/TeachResNet34_finetuned_best.pth  
+/main_functions/teacher_models/TeachResNet18_finetuned_best.pth 
+ 
+/dataset/data/cifar-100-python/test                              
+/dataset/data/cifar-100-python/train                            
