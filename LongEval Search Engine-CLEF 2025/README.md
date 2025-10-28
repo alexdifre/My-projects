@@ -17,8 +17,6 @@ The repository is organised as follows:
 - **runs**: this folder contains the runs produced by the developed system:
     - in the **LongEval runs** folder, you can find the runs submitted to CLEF.
     - in the **train runs** folder, you can find the train runs results.
-- **homework-1**: this folder contains the report describing the techniques applied.
-**homework-2**: this folder contains the report describing the results 
 - **LongEval Search Engine-CLEF 2025**: this is the final paper submitted to CLEF
 A comprehensive explanation of the technical intricacies can be found in the associated paper: **LongEval Search Engine-CLEF 2025**
 ---

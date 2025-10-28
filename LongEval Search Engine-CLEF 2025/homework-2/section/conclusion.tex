@@ -1,8 +1,0 @@
-\section{Conclusions and Future Work}
-\label{sec:conclusion}
-
-Our systematic exploration of retrieval strategies for the CLEF LongEval task demonstrates that \textbf{traditional IR techniques}, when carefully tuned, form a robust foundation for modern search engines. The \textbf{Snowball stemmer} and \textbf{Letter tokenizer} emerged as the most effective normalization tools, with the combined pipeline \texttt{Snow + Letter + Stoplist (40FR+10EN) + Expansion} achieving strong baseline performance. Among query expansion methods, \textbf{phrase queries} (slop=5) and \textbf{fuzzy matching} (edit distance=2) consistently improved performance, while positional strategies like \textbf{Start} (weighting document beginnings) and \textbf{N-grams} delivered marginal gains on the 2023 dataset. Integrating complementary methods---such as \texttt{Phrase + Fuzzy + Start}---yielded the highest 2022 MAP (0.0979) and nDCG (0.1794), underscoring the value of hybrid approaches.
-\vspace{1\baselineskip}
-
-The data related to the 01/2023 dataset show more significant values, as they were tested using updated qrels files, whereas the 06/2022 data exhibit certain inconsistencies.
-Methods such as LLM-based expansion, pseudo-relevance feedback (PRF), as well as the use of dictionaries and synonyms, did not yield satisfactory results. Further fine-tuning of the associated parameters would be necessary to enhance their effectiveness and make their use beneficial for improving retrieval performance.
