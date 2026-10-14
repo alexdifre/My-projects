@@ -1,5 +1,8 @@
 # A Two-Stage Distillation Framework for Mitigating Shortcut Learning via Decoupled Representation and Classifier Training
 
+> [!NOTE]
+> For a comprehensive and detailed description of the project, methodology, and experimental results, please refer to the accompanying paper: [**Knowledge Distillation with Decoupled Learning.pdf**](Knowledge%20Distillation%20with%20Decoupled%20Learning.pdf).
+
 ---
 
 ## Introduction
@@ -20,9 +23,6 @@ Our experiments show that this decoupled strategy is effective, yielding improve
 A statistical analysis of the distilled model’s predictions reveals distinct error patterns compared to the teacher, suggesting that the student learns different inductive biases.  
 These findings indicate that separating feature and classifier learning is a viable and robust framework for knowledge distillation, offering a structured alternative to end-to-end training.
 
----
-
-A comprehensive explanation of the technical intricacies can be found in the associated paper: **Knowledge Distillation with Decoupled Learning.pdf**
 
 ---
 ## Repository Structure
@@ -57,13 +57,37 @@ A comprehensive explanation of the technical intricacies can be found in the ass
 │
 ├── .DS_Store                   # macOS system file (ignored)
 ├── __init__.py                 # Package initialization
-├── Knowledge_Distillation...   # paper
-├── main.py                     # Main entry point for training
-├── main_eval.py                # Evaluation script for trained models
-└──README.md                   
+├── Knowledge Distillation with Decoupled Learning.pdf # Project paper
+├── main.py                     # Main training pipeline (Phase 1 CRD + Phase 2 KL)
+├── main_eval.py                # Standalone evaluation and statistical analysis script
+├── run.py                      # Batch automation runner across multiple student models
+└── README.md                   
 ```
 
-A comprehensive explanation of the technical intricacies can be found in the associated paper: **Knowledge Distillation with Decoupled Learning.pdf**
+### Script Roles & Usage
+
+| Script | Purpose | When to Use |
+| :--- | :--- | :--- |
+| [`main.py`](main.py) | **Full Two-Stage Distillation Pipeline** | Use to train a specific student model from scratch through Phase 1 (CRD feature alignment) and Phase 2 (KL logit distillation & classifier training). |
+| [`run.py`](run.py) | **Batch Training Automation** | Use to train multiple student architectures (`resnet8`, `resnet14`, `resnet20`) sequentially without manual intervention. |
+| [`main_eval.py`](main_eval.py) | **Evaluation & Statistical Analysis Only** | Use when models are already trained to load checkpoints and perform diagnostic analysis, confusion matrices, and error correlation without re-training. |
+
+#### Running the Scripts
+
+- **Train a single student:**
+  ```bash
+  python main.py --model_s resnet20
+  ```
+
+- **Run batch distillation across multiple students:**
+  ```bash
+  python run.py
+  ```
+
+- **Evaluate pre-trained checkpoints:**
+  ```bash
+  python main_eval.py --model_s resnet20
+  ```
 
 ---
 
