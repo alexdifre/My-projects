@@ -1,6 +1,6 @@
-# Deep Learning Assignments (DATA20046)
+# Deep Learning Assignments 
 
-This repository contains the implementations, experimental investigations, and empirical findings for the assignments of the **Neural Networks and Deep Learning (DATA20046)** course. All implementations are developed in **PyTorch**, utilizing the classic **MNIST** handwritten digits dataset as the primary benchmark across all tasks.
+This repository contains the implementations, experimental investigations, and empirical findings for the assignments of the **Neural Networks and Deep Learning** course. All implementations are developed in **PyTorch**, utilizing the classic **MNIST** handwritten digits dataset as the primary benchmark across all tasks.
 
 ---
 

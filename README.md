@@ -62,16 +62,15 @@ A search engine implementation developed for the LongEval task at CLEF 2025. The
 
 ---
 
-### 4. Maximum Clique Optimization
+### 4. LASSO Optimization
 **Course:** Optimization for Data Science
 
-Implementation of optimization algorithms for solving the Maximum Clique problem using the Frank-Wolfe algorithm and related techniques.
+Implementation of optimization algorithms for solving the LASSO problem using the Frank-Wolfe algorithm and related techniques.
 
 **Technologies:** Python
 
 **Key Features:**
 - Frank-Wolfe optimization algorithm
-- Graph analysis and visualization
 - Computational complexity analysis
 - Performance benchmarking
 
@@ -92,6 +91,44 @@ A reinforcement learning project focused on autonomous driving scenarios. The sy
 - Policy evaluation and visualization
 
 ---
+
+### 6. Deep Learning Assignments
+**Course:** Deep Learning
+
+
+This document provides a concise summary of the 5 programming tasks required for the course assignment. All experiments use the **MNIST** dataset and **PyTorch**.
+
+
+## Task 1: Supervised Learning Basics
+
+* **Goal:** Train two different neural network architectures (e.g., MLP and CNN) to classify MNIST digits.
+
+
+
+## Task 2: Double Descent
+
+* **Goal:** Replicate and analyze the *Double Descent* phenomenon on MNIST based on [arXiv:2303.14151](https://arxiv.org/abs/2303.14151).
+
+
+
+## Task 3: Transfer Learning
+
+* **Goal:** Transfer a pre-trained MNIST model to a new task with a **small training set**.
+
+
+## Task 4: Autoencoders
+
+* **Goal:** Reduce image dimensionality to a 2D latent space ($m=2$).
+
+
+## Task 5: Generative Models (GAN)
+
+* **Goal:** Train a Generative Adversarial Network (GAN) to generate new synthetic MNIST digits.
+
+
+
+
+
 
 ## Setup and Installation
 
